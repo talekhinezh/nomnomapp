@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "1065970957339",
+    "firebase_url": "https://nomnom-7293f.firebaseio.com",
+    "project_id": "nomnom-7293f",
+    "storage_bucket": "nomnom-7293f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1065970957339:android:91853d4bc1b4bc9a728cbe",
+        "android_client_info": {
+          "package_name": "com.nomnom"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1065970957339-kk2h2ej56p7nv6vgbrnr9a7cabmbqj3e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDi1C5rI_QrPuZt71KJkM13NxsEEWAzWU4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1065970957339-kk2h2ej56p7nv6vgbrnr9a7cabmbqj3e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
