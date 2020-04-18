@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 void main() => runApp(MyApp());
 
@@ -9,6 +10,112 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Food Items',
       home: MyHomePage(),
+    );
+  }
+}
+
+// Create a Form widget.
+class AddItemForm extends StatefulWidget {
+  @override
+  AddItemFormState createState() {
+    return AddItemFormState();
+  }
+}
+
+// Create a corresponding State class.
+// This class holds data related to the form.
+class AddItemFormState extends State<AddItemForm> {
+  // Create a global key that uniquely identifies the Form widget
+  // and allows validation of the form.
+  //
+  // Note: This is a GlobalKey<FormState>,
+  // not a GlobalKey<MyCustomFormState>.
+  final _formKey = GlobalKey<FormState>();
+  final nameController = TextEditingController();
+  final costController = TextEditingController();
+
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is disposed.
+    nameController.dispose();
+    costController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Build a Form widget using the _formKey created above.
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          TextFormField(
+            controller: nameController,
+            decoration: InputDecoration(
+                labelText: "Enter name of item"
+            ),
+            validator: (value) {
+              if (value.isEmpty) {
+                return 'Please enter some text';
+              }
+              return null;
+            },
+          ),
+          TextFormField(
+            controller: costController,
+            decoration: InputDecoration(
+                labelText: "Enter PHP cost of item"
+            ),
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              WhitelistingTextInputFormatter.digitsOnly
+            ],
+            validator: (value) {
+              if (value.isEmpty) {
+                return 'Please enter a number';
+              }
+              return null;
+            },
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: RaisedButton(
+              onPressed: () {
+                // Validate returns true if the form is valid, or false
+                // otherwise.
+                if (_formKey.currentState.validate()) {
+                  // If the form is valid, display a Snackbar.
+                  Scaffold.of(context)
+                      .showSnackBar(SnackBar(content: Text('Saving...')));
+                  Firestore.instance.collection('items')
+                    .document()
+                    .setData({
+                      'name': nameController.text,
+                      'cost': int.parse(costController.text),
+                    }).then((value) => Navigator.pop(context));
+                }
+              },
+              child: Text('Save'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class AddItemPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Add New Item"),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+        child: AddItemForm()
+      )
     );
   }
 }
@@ -26,6 +133,16 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(title: Text('Food Items')),
       body: _buildBody(context),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AddItemPage()),
+          );
+        },
+        tooltip: 'Add Item',
+        child: Icon(Icons.add),
+      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 
