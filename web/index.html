@@ -21,12 +21,34 @@
   <!-- This script installs service_worker.js to provide PWA functionality to
        application. For more information, see:
        https://developers.google.com/web/fundamentals/primers/service-workers -->
+
+  <!-- The core Firebase JS SDK is always required and must be listed first -->
+
+  <!-- TODO: Add SDKs for Firebase products that you want to use
+       https://firebase.google.com/docs/web/setup#available-libraries -->
+  <script src="https://www.gstatic.com/firebasejs/7.14.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.14.1/firebase-analytics.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.14.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.14.1/firebase-firestore.js"></script>
+
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
         navigator.serviceWorker.register('flutter_service_worker.js');
       });
     }
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCMFt5OCYWjr0mJK1meaQi8XcLZR8WaPkE",
+      authDomain: "nomnom-7293f.firebaseapp.com",
+      databaseURL: "https://nomnom-7293f.firebaseio.com",
+      projectId: "nomnom-7293f",
+      storageBucket: "nomnom-7293f.appspot.com",
+      messagingSenderId: "1065970957339",
+      appId: "1:1065970957339:web:e93cf568d2d3a0bf728cbe",
+      measurementId: "G-QP2HS1J7VR"
+    };
+    firebase.initializeApp(firebaseConfig);
   </script>
   <script src="main.dart.js" type="application/javascript"></script>
 </body>
