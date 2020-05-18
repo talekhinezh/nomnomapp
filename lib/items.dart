@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:nomnom/drawer.dart';
 
 // Create a Form widget.
 class AddItemForm extends StatefulWidget {
@@ -120,24 +121,7 @@ class _FoodItemsPageState extends State<FoodItemsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Food Items')),
-      drawer: Drawer(
-          child: ListView(
-            children: <Widget>[
-              ListTile(
-                  title: Text('Transactions'),
-                  onTap: () {
-                    Navigator.pushReplacementNamed(context, '/transactions');
-                  }
-              ),
-              ListTile(
-                  title: Text('Items'),
-                  onTap: () {
-                    Navigator.pushReplacementNamed(context, '/items');
-                  }
-              ),
-            ],
-          )
-      ),
+      drawer: NomNomDrawer(),
       body: _buildBody(context),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -183,7 +167,7 @@ class _FoodItemsPageState extends State<FoodItemsPage> {
         ),
         child: ListTile(
           title: Text(record.name),
-          trailing: Text(record.cost.toString()),
+          trailing: Text("PHP" + record.cost.toString()),
           onTap: () => print(record),
         ),
       ),

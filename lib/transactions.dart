@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:nomnom/drawer.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class TransactionsPage extends StatefulWidget {
@@ -15,24 +15,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Transactions')),
-      drawer: Drawer(
-          child: ListView(
-            children: <Widget>[
-              ListTile(
-                  title: Text('Transactions'),
-                  onTap: () {
-                    Navigator.pushReplacementNamed(context, '/transactions');
-                  }
-              ),
-              ListTile(
-                  title: Text('Items'),
-                  onTap: () {
-                    Navigator.pushReplacementNamed(context, '/items');
-                  }
-              ),
-            ],
-          )
-      ),
+      drawer: NomNomDrawer(),
       body: _buildBody(context),
     );
   }
