@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:nomnom/drawer.dart';
-import 'package:timeago/timeago.dart' as timeago;
+import 'package:intl/intl.dart';
 
 class TransactionsPage extends StatefulWidget {
   @override
@@ -52,7 +52,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
         child: ListTile(
           title: Text("PHP" + transaction.totalCost.toString()),
           subtitle: Text(transaction.items),
-          trailing: Text(timeago.format(transaction.timestamp.toDate())),
+          trailing: Text(new DateFormat().add_yMd().format(transaction.timestamp.toDate())),
         ),
       ),
     );
