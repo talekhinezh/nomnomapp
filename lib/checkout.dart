@@ -11,12 +11,52 @@ class CheckoutPage extends StatefulWidget {
 }
 
 class _CheckoutPageState extends State<CheckoutPage> {
+  var numItems = 0;
+  var totalCost = 0;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Checkout')),
       drawer: NomNomDrawer(),
-      body: _buildBody(context)
+      body: _buildBody(context),
+      floatingActionButtonLocation:
+      FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.check), onPressed: () {},),
+      bottomNavigationBar: BottomAppBar(
+        shape: CircularNotchedRectangle(),
+        notchMargin: 4.0,
+        child: new Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            FlatButton(
+              child: Text('₱' + totalCost.toString()),
+            ),
+            FlatButton.icon(
+              label: Text(numItems.toString()),
+              icon: Icon(Icons.format_list_bulleted),
+            ),
+          ],
+        ),
+      ),
+      /*
+      bottomNavigationBar: BottomNavigationBar(
+        onTap: onTabTapped,
+        currentIndex: 0, // this will be set when a new tab is tapped
+        items: [
+          BottomNavigationBarItem(
+            icon: new Icon(Icons.fastfood),
+            title: new Text('Select Items'),
+          ),
+          BottomNavigationBarItem(
+            icon: new Icon(Icons.attach_money),
+            title: new Text('Current Sale (' + numSale.toString() + ')'),
+          ),
+        ],
+      ),
+       */
     );
   }
 
@@ -51,8 +91,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
         ),
         child: ListTile(
           title: Text(record.name),
-          trailing: Text("PHP" + record.cost.toString()),
-          onTap: () => print(record),
+          trailing: Text("₱" + record.cost.toString()),
+          onTap: () => {
+            setState(() {
+              totalCost = totalCost + record.cost;
+              numItems = numItems + 1;
+            })
+          },
         ),
       ),
     );
