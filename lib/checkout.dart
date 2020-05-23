@@ -11,8 +11,7 @@ class CheckoutPage extends StatefulWidget {
 }
 
 class _CheckoutPageState extends State<CheckoutPage> {
-  var numItems = 0;
-  var totalCost = 0;
+  Map<Record, int> items = {};
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +22,21 @@ class _CheckoutPageState extends State<CheckoutPage> {
       floatingActionButtonLocation:
       FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.check), onPressed: () {},),
+        child: const Icon(Icons.check),
+        onPressed: () {
+          Firestore.instance.collection('orders')
+              .add({
+                'timestamp': DateTime.now(),
+                'items': items.entries.map((e) => {
+                  'name': e.key.name,
+                  'cost': e.key.cost,
+                  'itemId': e.key.id,
+                  'amount': e.value,
+                }).toList()
+              })
+            .then((value) => Navigator.pushReplacementNamed(context, '/orders'));
+        },
+      ),
       bottomNavigationBar: BottomAppBar(
         shape: CircularNotchedRectangle(),
         notchMargin: 4.0,
@@ -32,31 +45,16 @@ class _CheckoutPageState extends State<CheckoutPage> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             FlatButton(
-              child: Text('₱' + totalCost.toString()),
+              child: Text('₱' + (items.isEmpty ? '0' : items.entries.map((e) => e.key.cost * e.value)
+                  .reduce((value, element) => value + element).toString())),
             ),
             FlatButton.icon(
-              label: Text(numItems.toString()),
+              label: Text(items.length.toString()),
               icon: Icon(Icons.format_list_bulleted),
             ),
           ],
         ),
       ),
-      /*
-      bottomNavigationBar: BottomNavigationBar(
-        onTap: onTabTapped,
-        currentIndex: 0, // this will be set when a new tab is tapped
-        items: [
-          BottomNavigationBarItem(
-            icon: new Icon(Icons.fastfood),
-            title: new Text('Select Items'),
-          ),
-          BottomNavigationBarItem(
-            icon: new Icon(Icons.attach_money),
-            title: new Text('Current Sale (' + numSale.toString() + ')'),
-          ),
-        ],
-      ),
-       */
     );
   }
 
@@ -94,8 +92,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
           trailing: Text("₱" + record.cost.toString()),
           onTap: () => {
             setState(() {
-              totalCost = totalCost + record.cost;
-              numItems = numItems + 1;
+              if (items.containsKey(record)) {
+                items = {}
+                  ..addAll(items.map((key, value) =>
+                      MapEntry(key, value + ((key == record) ? 1 : 0))));
+              } else {
+                items = {record: 1}..addAll(items);
+              }
             })
           },
         ),
@@ -107,16 +110,25 @@ class _CheckoutPageState extends State<CheckoutPage> {
 class Record {
   final String name;
   final int cost;
-  final DocumentReference reference;
+  final String id;
 
-  Record.fromMap(Map<String, dynamic> map, {this.reference})
+  Record.fromMap(Map<String, dynamic> map, DocumentReference ref)
       : assert(map['name'] != null),
         name = map['name'],
-        cost = map['cost'];
+        cost = map['cost'],
+        id = ref.documentID;
 
   Record.fromSnapshot(DocumentSnapshot snapshot)
-      : this.fromMap(snapshot.data, reference: snapshot.reference);
+      : this.fromMap(snapshot.data, snapshot.reference);
+
+  @override
+  int get hashCode => hashValues(name, cost, id);
 
   @override
   String toString() => "Record<$name:$cost>";
+
+  @override
+  bool operator ==(other) {
+    return this.name == other.name && this.cost == other.cost && this.id == other.id;
+  }
 }

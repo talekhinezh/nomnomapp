@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:flutter/material.dart';
 import 'package:nomnom/checkout.dart';
+import 'package:nomnom/orders.dart';
 import 'package:nomnom/transactions.dart';
 import 'items.dart';
 
@@ -35,8 +36,9 @@ class _MyAppState extends State<MyApp> {
               initialRoute: '/checkout',
               routes: {
                 '/checkout': (content) => CheckoutPage(),
+                '/orders': (content) => OrdersPage(),
+                '/transactions': (context) => TransactionsPage(),
                 '/items': (content) => FoodItemsPage(),
-                '/transactions': (context) => TransactionsPage()
               }
           );
         } else {

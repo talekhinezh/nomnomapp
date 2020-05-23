@@ -3,18 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:nomnom/drawer.dart';
 import 'package:intl/intl.dart';
 
-class TransactionsPage extends StatefulWidget {
+class OrdersPage extends StatefulWidget {
   @override
-  _TransactionsPageState createState() {
-    return _TransactionsPageState();
+  _OrdersPageState createState() {
+    return _OrdersPageState();
   }
 }
 
-class _TransactionsPageState extends State<TransactionsPage> {
+class _OrdersPageState extends State<OrdersPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Transactions')),
+      appBar: AppBar(title: Text('Orders')),
       drawer: NomNomDrawer(),
       body: _buildBody(context),
     );
@@ -22,7 +22,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
 
   Widget _buildBody(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-      stream: Firestore.instance.collection('transactions').snapshots(),
+      stream: Firestore.instance.collection('orders').orderBy('timestamp', descending: true).snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) return LinearProgressIndicator();
 
@@ -39,10 +39,10 @@ class _TransactionsPageState extends State<TransactionsPage> {
   }
 
   Widget _buildListItem(BuildContext context, DocumentSnapshot data) {
-    final transaction = Transaction.fromSnapshot(data);
+    final order = Order.fromSnapshot(data);
 
     return Padding(
-      key: ValueKey(transaction.transactionId),
+      key: ValueKey(order.orderId),
       padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8.0),
       child: Container(
         decoration: BoxDecoration(
@@ -50,37 +50,37 @@ class _TransactionsPageState extends State<TransactionsPage> {
           borderRadius: BorderRadius.circular(4.0),
         ),
         child: ListTile(
-          title: Text("PHP" + transaction.totalCost.toString()),
-          subtitle: Text(transaction.items),
-          trailing: Text(new DateFormat().add_yMd().format(transaction.timestamp.toDate()).toString()),
+          title: Text('₱' + order.totalCost.toString()),
+          subtitle: Text(order.items),
+          trailing: Text(new DateFormat().add_yMd().add_jm().format(order.timestamp.toDate()).toString()),
         ),
       ),
     );
   }
 }
 
-class Transaction {
-  final String transactionId;
+class Order {
+  final String orderId;
   final int totalCost;
   final Timestamp timestamp;
   final DocumentReference reference;
   final String items;
 
-  Transaction.fromMap(Map<String, dynamic> map, {this.reference})
-      : this.transactionId = reference.documentID,
+  Order.fromMap(Map<String, dynamic> map, {this.reference})
+      : this.orderId = reference.documentID,
         totalCost = List.from(map['items'])
-            .map((e) => Map.from(e)['cost'] * Map.from(e)['amount'])
+            .map((e) => Map.from(e)['cost'])
             .reduce((value, element) => value + element),
         timestamp = map['timestamp'],
         items = List.from(map['items']).map((e) =>
-          Map.from(e)['name'] + ' x' + Map.from(e)['amount'].toString()
+        Map.from(e)['name'] + ' x' + Map.from(e)['amount'].toString()
         ).join(", ")
   ;
 
-  Transaction.fromSnapshot(DocumentSnapshot snapshot)
+  Order.fromSnapshot(DocumentSnapshot snapshot)
       : this.fromMap(snapshot.data, reference: snapshot.reference)
   ;
 
   @override
-  String toString() => "Record<$timestamp>";
+  String toString() => "Order<$timestamp>";
 }

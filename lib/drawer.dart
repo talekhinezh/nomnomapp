@@ -14,6 +14,12 @@ class NomNomDrawer extends StatelessWidget {
                 }
             ),
             ListTile(
+                title: Text('Orders'),
+                onTap: () {
+                  Navigator.pushReplacementNamed(context, '/orders');
+                }
+            ),
+            ListTile(
                 title: Text('Transactions'),
                 onTap: () {
                   Navigator.pushReplacementNamed(context, '/transactions');
