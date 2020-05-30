@@ -28,24 +28,32 @@ class _MyAppState extends State<MyApp> {
   }
 
   _buildLandingPage() {
+    /*
     return StreamBuilder<FirebaseUser>(
       stream: FirebaseAuth.instance.onAuthStateChanged,
       builder: (BuildContext context, snapshot) {
-        if (snapshot.hasData) {
+     */
+        //if (snapshot.hasData) {
           return MaterialApp(
-              initialRoute: '/checkout',
+              //home: ,
+              //initialRoute: '/checkout',
               routes: {
+                '/': (content) => CheckoutPage(),
                 '/checkout': (content) => CheckoutPage(),
                 '/orders': (content) => OrdersPage(),
                 '/transactions': (context) => TransactionsPage(),
                 '/items': (content) => FoodItemsPage(),
               }
           );
+          /*
         } else {
           return _buildSocialLogin();
         }
+           */
+          /*
       },
     );
+           */
   }
 
   _buildSocialLogin() {
