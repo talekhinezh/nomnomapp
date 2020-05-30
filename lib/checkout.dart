@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:collection/collection.dart';
 import 'package:nomnom/drawer.dart';
 
 class CheckoutPage extends StatefulWidget {
@@ -101,11 +101,15 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 MaterialPageRoute(builder: (context) => AddItemPage(record)),
               ) as CheckoutItem;
 
+              if (checkoutItem == null) {
+                return;
+              }
+
               setState(() {
                 if (items.containsKey(checkoutItem)) {
                   items = {}
                     ..addAll(items.map((key, value) =>
-                        MapEntry(key, value + ((key == record) ? 1 : 0))));
+                        MapEntry(key, value + ((key.record == record) ? 1 : 0))));
                 } else {
                   items = {checkoutItem: 1}..addAll(items);
                 }
@@ -125,6 +129,14 @@ class Extra {
   Extra.fromMap(Map<String, dynamic> map) :
     name = map['name'],
     cost = map['cost'];
+
+  @override
+  int get hashCode => hashValues(name, cost);
+
+  @override
+  bool operator ==(other) {
+    return this.name == other.name && this.cost == other.cost;
+  }
 }
 
 class Record {
@@ -152,22 +164,23 @@ class Record {
   @override
   bool operator ==(other) {
     return this.name == other.name && this.cost == other.cost
-        && this.id == other.id && this.extras == other.extras;
+        && this.id == other.id;
   }
 }
 
 class CheckoutItem {
   final Record record;
   final List<Extra> extras;
+  Function eq = const ListEquality().equals;
 
   CheckoutItem(this.record, this.extras);
 
   @override
-  int get hashCode => record.hashCode^extras.hashCode;
+  int get hashCode => record.hashCode;
 
   @override
   bool operator ==(other) {
-    return this.record == other.record && this.extras == other.extras;
+    return this.record == other.record && eq(this.extras, other.extras);
   }
 }
 
@@ -201,7 +214,11 @@ class AddItemPageState extends State<AddItemPage> {
                         onChanged: (bool value) {
                           setState(() {
                             var tmp = Map.of(enabled);
-                            tmp[e.name] = e;
+                            if (value) {
+                              tmp[e.name] = e;
+                            } else {
+                              tmp.remove(e.name);
+                            }
                             enabled = tmp;
                           });
                         },
@@ -226,7 +243,8 @@ class AddItemPageState extends State<AddItemPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 FlatButton(
-                    child: Text('₱' + widget.record.cost.toString())
+                    child: Text('₱' + (widget.record.cost
+                        + enabled.values.map((e) => e.cost).fold(0, (a, b) => a + b)).toString())
                 ),
                 FlatButton(
                   child: Text(widget.record.name)
