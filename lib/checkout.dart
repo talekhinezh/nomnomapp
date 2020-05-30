@@ -49,7 +49,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   .reduce((value, element) => value + element).toString())),
             ),
             FlatButton.icon(
-              label: Text(items.length.toString()),
+              label: Text(items.isEmpty ? '0' : items.values.reduce((value, element) => value + element).toString()),
               icon: Icon(Icons.format_list_bulleted),
             ),
           ],
@@ -93,12 +93,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
             title: Text(record.name),
             trailing: Text("₱" + record.cost.toString()),
             onTap: () => {
-              /*
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => AddItemPage(name: record.name)),
+                MaterialPageRoute(builder: (context) => AddItemPage(record)),
               )
-               */
+              /*
               setState(() {
                 if (items.containsKey(record)) {
                   items = {}
@@ -108,6 +107,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   items = {record: 1}..addAll(items);
                 }
               })
+               */
             },
           ),
       ),
@@ -115,16 +115,28 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 }
 
+class Extra {
+  final String name;
+  final int cost;
+  Extra({ this.name, this.cost});
+
+  Extra.fromMap(Map<String, dynamic> map) :
+    name = map['name'],
+    cost = map['cost'];
+}
+
 class Record {
   final String name;
   final int cost;
   final String id;
+  final List<Extra> extras;
 
   Record.fromMap(Map<String, dynamic> map, DocumentReference ref)
       : assert(map['name'] != null),
         name = map['name'],
         cost = map['cost'],
-        id = ref.documentID;
+        id = ref.documentID,
+        extras = map['extras'] == null ? [] : List.from(map['extras']).map((e) => Extra.fromMap(e)).toList();
 
   Record.fromSnapshot(DocumentSnapshot snapshot)
       : this.fromMap(snapshot.data, snapshot.reference);
@@ -141,43 +153,40 @@ class Record {
   }
 }
 // Create a Form widget.
-class AddItemForm extends StatefulWidget {
+class AddExtrasForm extends StatefulWidget {
+  final List<Extra> extras;
+  AddExtrasForm(List<Extra> extras) : extras = extras;
+
   @override
-  AddItemFormState createState() {
-    return AddItemFormState();
+  AddExtrasFormState createState() {
+    return AddExtrasFormState(extras);
   }
 }
 
 // Create a corresponding State class.
 // This class holds data related to the form.
-class AddItemFormState extends State<AddItemForm> {
-  Map<String, dynamic> enabled;
-  final List<String> extras = ['Egg', 'Rice'];
+class AddExtrasFormState extends State<AddExtrasForm> {
+  Map<String, dynamic> enabled = new Map();
+  final List<Extra> extras;
 
-  AddItemFormState() :
-    enabled = {'Egg': true, 'Rice': false };
-
-  @override
-  void dispose() {
-    // Clean up the controller when the widget is disposed.
-    super.dispose();
-  }
+  AddExtrasFormState(List<Extra> extras) :
+    extras = extras;
 
   @override
   Widget build(BuildContext context) {
     return ListView(
-      children: ['Egg', 'Rice'].map((e) =>
+      children: extras.map((e) =>
           CheckboxListTile(
-              title: Text(e),
-              value: enabled[e],
+              title: Text(e.name),
+              value: enabled[e.name] == null ? false : enabled[e.name],
               onChanged: (bool value) {
                 setState(() {
-                  var tmp = {};
-                  tmp[e] = !enabled[e];
+                  var tmp = Map.of(enabled);
+                  tmp[e.name] = value;
                   enabled = tmp;
                 });
               },
-              subtitle: const Text('₱20')
+              subtitle: Text("₱" + e.cost.toString())
           )
       ).toList()
     );
@@ -185,19 +194,42 @@ class AddItemFormState extends State<AddItemForm> {
 }
 
 class AddItemPage extends StatelessWidget {
-  final String name;
-  AddItemPage({ this.name }) : super();
+  final Record record;
+  AddItemPage(Record record) : record = record, super();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text(this.name),
+          title: Text(record.name),
         ),
         body: Padding(
             padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 16),
-            child: AddItemForm()
-        )
+            child: AddExtrasForm(record.extras)
+        ),
+        floatingActionButtonLocation:
+        FloatingActionButtonLocation.centerDocked,
+        floatingActionButton: FloatingActionButton(
+          child: const Icon(Icons.check),
+          onPressed: () {
+          },
+        ),
+        bottomNavigationBar: BottomAppBar(
+          shape: CircularNotchedRectangle(),
+            notchMargin: 4.0,
+            child: new Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                FlatButton(
+                    child: Text('₱' + record.cost.toString())
+                ),
+                FlatButton(
+                  child: Text(record.name)
+                )
+              ],
+            ),
+        ),
     );
   }
 }
