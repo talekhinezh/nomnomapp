@@ -100,7 +100,7 @@ class _OrdersPageState extends State<OrdersPage> {
       Map.from(e)['amount'].toString()
       + 'x ' +
       Map.from(e)['name']
-      + (Map.from(e)['extras'] == null
+      + (Map.from(e)['extras'] == null || Map.from(e)['extras'].isEmpty
       ? '' : '\n      ' + List.from(Map.from(e)['extras']).map((e) => '+' + Map.from(e)['name']).join(","))
       ).join("\n");
 
@@ -117,7 +117,7 @@ class _OrdersPageState extends State<OrdersPage> {
             + (Map.from(e)['extras'] == null ? 0
                 : List.from(Map.from(e)['extras'])
                 .map((extra) => Map.from(extra)['cost'])
-                .reduce((value, element) => value + element))
+                .fold(0, (value, element) => value + element))
           )
           * Map.from(e)['amount'])
         .reduce((value, element) => value + element);

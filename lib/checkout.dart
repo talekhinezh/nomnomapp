@@ -11,7 +11,7 @@ class CheckoutPage extends StatefulWidget {
 }
 
 class _CheckoutPageState extends State<CheckoutPage> {
-  Map<Record, int> items = {};
+  Map<CheckoutItem, int> items = {};
 
   @override
   Widget build(BuildContext context) {
@@ -28,9 +28,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
               .add({
                 'timestamp': DateTime.now(),
                 'items': items.entries.map((e) => {
-                  'name': e.key.name,
-                  'cost': e.key.cost,
-                  'itemId': e.key.id,
+                  'name': e.key.record.name,
+                  'cost': e.key.record.cost,
+                  'itemId': e.key.record.id,
+                  'extras': e.key.extras.map((extra) => {'name': extra.name, 'cost': extra.cost}).toList(),
                   'amount': e.value,
                 }).toList()
               })
@@ -45,8 +46,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             FlatButton(
-              child: Text('₱' + (items.isEmpty ? '0' : items.entries.map((e) => e.key.cost * e.value)
-                  .reduce((value, element) => value + element).toString())),
+              child: Text('₱' + items.entries.map(
+                      (e) => (e.key.record.cost +
+                          e.key.extras.map((e) => e.cost).fold(0, (a, b) => a + b)) * e.value
+              ).fold(0, (value, element) => value + element).toString()),
             ),
             FlatButton.icon(
               label: Text(items.isEmpty ? '0' : items.values.reduce((value, element) => value + element).toString()),
@@ -92,22 +95,21 @@ class _CheckoutPageState extends State<CheckoutPage> {
             contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
             title: Text(record.name),
             trailing: Text("₱" + record.cost.toString()),
-            onTap: () => {
-              Navigator.push(
+            onTap: () async {
+              final checkoutItem = await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => AddItemPage(record)),
-              )
-              /*
+              ) as CheckoutItem;
+
               setState(() {
-                if (items.containsKey(record)) {
+                if (items.containsKey(checkoutItem)) {
                   items = {}
                     ..addAll(items.map((key, value) =>
                         MapEntry(key, value + ((key == record) ? 1 : 0))));
                 } else {
-                  items = {record: 1}..addAll(items);
+                  items = {checkoutItem: 1}..addAll(items);
                 }
-              })
-               */
+              });
             },
           ),
       ),
@@ -149,69 +151,71 @@ class Record {
 
   @override
   bool operator ==(other) {
-    return this.name == other.name && this.cost == other.cost && this.id == other.id;
+    return this.name == other.name && this.cost == other.cost
+        && this.id == other.id && this.extras == other.extras;
   }
 }
+
+class CheckoutItem {
+  final Record record;
+  final List<Extra> extras;
+
+  CheckoutItem(this.record, this.extras);
+
+  @override
+  int get hashCode => record.hashCode^extras.hashCode;
+
+  @override
+  bool operator ==(other) {
+    return this.record == other.record && this.extras == other.extras;
+  }
+}
+
 // Create a Form widget.
-class AddExtrasForm extends StatefulWidget {
-  final List<Extra> extras;
-  AddExtrasForm(List<Extra> extras) : extras = extras;
-
-  @override
-  AddExtrasFormState createState() {
-    return AddExtrasFormState(extras);
-  }
-}
-
-// Create a corresponding State class.
-// This class holds data related to the form.
-class AddExtrasFormState extends State<AddExtrasForm> {
-  Map<String, dynamic> enabled = new Map();
-  final List<Extra> extras;
-
-  AddExtrasFormState(List<Extra> extras) :
-    extras = extras;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      children: extras.map((e) =>
-          CheckboxListTile(
-              title: Text(e.name),
-              value: enabled[e.name] == null ? false : enabled[e.name],
-              onChanged: (bool value) {
-                setState(() {
-                  var tmp = Map.of(enabled);
-                  tmp[e.name] = value;
-                  enabled = tmp;
-                });
-              },
-              subtitle: Text("₱" + e.cost.toString())
-          )
-      ).toList()
-    );
-  }
-}
-
-class AddItemPage extends StatelessWidget {
+class AddItemPage extends StatefulWidget {
   final Record record;
   AddItemPage(Record record) : record = record, super();
+
+  @override
+  AddItemPageState createState() {
+    return AddItemPageState();
+  }
+}
+
+class AddItemPageState extends State<AddItemPage> {
+  Map<String, Extra> enabled = new Map();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text(record.name),
+          title: Text(widget.record.name),
         ),
         body: Padding(
             padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 16),
-            child: AddExtrasForm(record.extras)
+            child: ListView(
+                children: widget.record.extras.map((e) =>
+                    CheckboxListTile(
+                        title: Text(e.name),
+                        value: enabled[e.name] != null,
+                        onChanged: (bool value) {
+                          setState(() {
+                            var tmp = Map.of(enabled);
+                            tmp[e.name] = e;
+                            enabled = tmp;
+                          });
+                        },
+                        subtitle: Text("₱" + e.cost.toString())
+                    )
+                ).toList()
+            )
         ),
         floatingActionButtonLocation:
         FloatingActionButtonLocation.centerDocked,
         floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.check),
           onPressed: () {
+            Navigator.pop(context, CheckoutItem(widget.record, enabled.values.toList()));
           },
         ),
         bottomNavigationBar: BottomAppBar(
@@ -222,10 +226,10 @@ class AddItemPage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 FlatButton(
-                    child: Text('₱' + record.cost.toString())
+                    child: Text('₱' + widget.record.cost.toString())
                 ),
                 FlatButton(
-                  child: Text(record.name)
+                  child: Text(widget.record.name)
                 )
               ],
             ),
