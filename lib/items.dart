@@ -148,27 +148,31 @@ class _FoodItemsPageState extends State<FoodItemsPage> {
   }
 
   Widget _buildList(BuildContext context, List<DocumentSnapshot> snapshot) {
-    return ListView(
-      padding: const EdgeInsets.only(top: 19.0),
-      children: snapshot.map((data) => _buildListItem(context, data)).toList(),
+    return Center(
+        child: Container(
+            constraints: BoxConstraints(maxWidth: 500),
+            child: ListView(
+              padding: const EdgeInsets.only(top: 19.0),
+              children: snapshot.map((data) => _buildListItem(context, data)).toList(),
+            )
+        )
     );
   }
+
 
   Widget _buildListItem(BuildContext context, DocumentSnapshot data) {
     final record = Record.fromSnapshot(data);
 
-    return Padding(
-      key: ValueKey(record.name),
-      padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8.0),
+    return Card(
+      elevation: 8.0,
+      margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
       child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey),
-          borderRadius: BorderRadius.circular(4.0),
-        ),
         child: ListTile(
+          contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
           title: Text(record.name),
-          trailing: Text("PHP" + record.cost.toString()),
-          onTap: () => print(record),
+          trailing: Text("₱" + record.cost.toString()),
+          onTap: () {
+          },
         ),
       ),
     );
