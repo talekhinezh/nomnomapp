@@ -11,7 +11,26 @@ class CheckoutPage extends StatefulWidget {
 }
 
 class _CheckoutPageState extends State<CheckoutPage> {
+  int _selectedIndex = 0;
+  String category = 'food';
   Map<CheckoutItem, int> items = {};
+
+  void _onItemTapped(int index) {
+    setState(() {
+      switch(index) {
+        case 0: category = 'food'; break;
+        case 1: category = 'drinks'; break;
+        case 2: category = 'burgers'; break;
+      }
+      _selectedIndex = index;
+    });
+  }
+
+  String _total() {
+    return '₱' + items.entries.map(
+            (e) => (e.key.record.cost + e.key.extras.map((e) => e.cost).fold(0, (a, b) => a + b)) * e.value)
+        .fold(0, (value, element) => value + element).toString();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,10 +38,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
       appBar: AppBar(title: Text('Checkout')),
       drawer: NomNomDrawer(),
       body: _buildBody(context),
-      floatingActionButtonLocation:
-      FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.check),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: FloatingActionButton.extended(
+        icon: const Icon(Icons.check),
+        label: Text('Checkout - ' + _total()),
+        backgroundColor: Colors.green,
         onPressed: () {
           Firestore.instance.collection('orders')
               .add({
@@ -38,25 +58,25 @@ class _CheckoutPageState extends State<CheckoutPage> {
             .then((value) => Navigator.pushReplacementNamed(context, '/orders'));
         },
       ),
-      bottomNavigationBar: BottomAppBar(
-        shape: CircularNotchedRectangle(),
-        notchMargin: 4.0,
-        child: new Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            FlatButton(
-              child: Text('₱' + items.entries.map(
-                      (e) => (e.key.record.cost +
-                          e.key.extras.map((e) => e.cost).fold(0, (a, b) => a + b)) * e.value
-              ).fold(0, (value, element) => value + element).toString()),
-            ),
-            FlatButton.icon(
-              label: Text(items.isEmpty ? '0' : items.values.reduce((value, element) => value + element).toString()),
-              icon: Icon(Icons.format_list_bulleted),
-            ),
-          ],
-        ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.restaurant),
+            title: Text("Food")
+          ),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.free_breakfast),
+            title: Text("Drinks")
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.fastfood),
+            title: Text("Burgers"),
+            backgroundColor: Colors.green
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.amber[800],
+        onTap: _onItemTapped
       ),
     );
   }
@@ -78,15 +98,17 @@ class _CheckoutPageState extends State<CheckoutPage> {
           constraints: BoxConstraints(maxWidth: 500),
           child: ListView(
             padding: const EdgeInsets.only(top: 19.0),
-            children: snapshot.map((data) => _buildListItem(context, data)).toList(),
+            children: snapshot
+                .map((e) => Record.fromSnapshot(e))
+                .where((record) => record.categories.contains(category))
+                .map((record) => _buildListItem(context, record))
+                .toList(),
           )
       )
     );
   }
 
-  Widget _buildListItem(BuildContext context, DocumentSnapshot data) {
-    final record = Record.fromSnapshot(data);
-
+  Widget _buildListItem(BuildContext context, Record record) {
     return Card(
       elevation: 8.0,
       margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
@@ -144,12 +166,14 @@ class Record {
   final int cost;
   final String id;
   final List<Extra> extras;
+  final List<String> categories;
 
   Record.fromMap(Map<String, dynamic> map, DocumentReference ref)
       : assert(map['name'] != null),
         name = map['name'],
         cost = map['cost'],
         id = ref.documentID,
+        categories = List.castFrom(map['categories']),
         extras = map['extras'] == null ? [] : List.from(map['extras']).map((e) => Extra.fromMap(e)).toList();
 
   Record.fromSnapshot(DocumentSnapshot snapshot)
