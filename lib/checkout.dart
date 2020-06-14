@@ -150,10 +150,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
             title: Text(record.name),
             trailing: Text("₱" + record.cost.toString()),
             onTap: () async {
-              final checkoutItem = await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => AddItemPage(record)),
-              ) as CheckoutItem;
+              final CheckoutItem checkoutItem =
+              record.extras.isNotEmpty ?
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AddItemPage(record)),
+                ) as CheckoutItem :
+                CheckoutItem(record, []);
 
               if (checkoutItem == null) {
                 return;
