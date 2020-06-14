@@ -12,33 +12,34 @@ class CheckoutPage extends StatefulWidget {
 
 class _CheckoutPageState extends State<CheckoutPage> {
   Map<CheckoutItem, int> items = {};
-  String _total() {
-    return '₱' + items.entries.map(
+  int _total() {
+    return items.entries.map(
             (e) => (e.key.record.cost + e.key.extras.map((e) => e.cost).fold(0, (a, b) => a + b)) * e.value)
-        .fold(0, (value, element) => value + element).toString();
+        .fold(0, (value, element) => value + element);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Checkout')
-      ),
-      drawer: NomNomDrawer(),
-      body: Column(
-        children: [
+  Widget _buildCurrentItems(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20.0),
+      color: Colors.white,
+      child: Column(
+        children:[
+          Expanded(
+              child: Column(
+                  children: items.entries.map((e) => Text(e.key.record.name + " x" + e.value.toString())).toList()
+              )
+          ),
           Container(
-            padding: const EdgeInsets.all(10.0),
             child: RaisedButton(
               elevation: 10.0,
               textColor: Colors.white,
-              padding: const EdgeInsets.fromLTRB(35.0, 15.0, 35.0, 15.0),
+              padding: const EdgeInsets.fromLTRB(100.0, 25.0, 100.0, 25.0),
               color: Colors.green,
               child: Text(
-                  'Checkout - ' + _total(),
+                  'Checkout - ₱' + _total().toString(),
                   style: TextStyle(fontSize: 20)
               ),
-              onPressed: () {
+              onPressed: _total() == 0 ? null : () {
                 Firestore.instance.collection('orders')
                     .add({
                   'timestamp': DateTime.now(),
@@ -50,10 +51,25 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     'amount': e.value,
                   }).toList()
                 })
-                .then((value) => Navigator.pushReplacementNamed(context, '/orders'));
+                    .then((value) => Navigator.pushReplacementNamed(context, '/orders'));
               },
             ),
-          ),
+          )
+        ]
+      )
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Checkout')
+      ),
+      drawer: NomNomDrawer(),
+      body: Row(
+        children: [
+          _buildCurrentItems(context),
           Expanded(
             child: DefaultTabController(
               length: 3,
