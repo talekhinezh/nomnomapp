@@ -71,7 +71,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         children: [
           Expanded(
             child: DefaultTabController(
-              length: 3,
+              length: 2,
               child:
                 Column(
                   children: [
@@ -80,7 +80,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
                             children: [
                               _buildBody(context, 'food'),
                               _buildBody(context, 'drinks'),
-                              _buildBody(context, 'burgers'),
                             ].toList(),
                           )
                       ),
@@ -96,11 +95,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                                 Tab(
                                   text: 'Drinks',
                                   icon: Icon(Icons.free_breakfast),
-                                ),
-                                Tab(
-                                  text: 'Burgers',
-                                  icon: Icon(Icons.fastfood),
-                                ),
+                                )
                               ].toList()
                           )
                       ),
