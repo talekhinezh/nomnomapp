@@ -36,7 +36,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
               padding: const EdgeInsets.fromLTRB(100.0, 25.0, 100.0, 25.0),
               color: Colors.green,
               child: Text(
-                  'Checkout - ₱' + _total().toString(),
+                  'Charge ₱' + _total().toString(),
                   style: TextStyle(fontSize: 20)
               ),
               onPressed: _total() == 0 ? null : () {
@@ -69,7 +69,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
       drawer: NomNomDrawer(),
       body: Row(
         children: [
-          _buildCurrentItems(context),
           Expanded(
             child: DefaultTabController(
               length: 3,
@@ -86,7 +85,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                           )
                       ),
                       Container(
-                          color: Colors.blue,
+                          color: Colors.blueGrey,
                           child: TabBar(
                               indicatorColor: Colors.white,
                               tabs: [
@@ -108,7 +107,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     ]
                 )
             )
-          )
+          ),
+          _buildCurrentItems(context),
         ],
       ),//_buildBody(context),
     );
